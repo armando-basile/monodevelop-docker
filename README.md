@@ -15,7 +15,7 @@ $ sudo docker run \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
  -v /tmp:/tmp \
- -v ./home:/home/$USER \
+ -v /home:/home/$USER \
  -v /etc/group:/etc/group:ro \
  -v /etc/passwd:/etc/passwd:ro \
  -v /etc/shadow:/etc/shadow:ro \
