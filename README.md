@@ -9,7 +9,8 @@ _NB: do not forget the point at the end_
 
 
 to run image locally use
-```$ sudo docker run \
+```
+$ sudo docker run \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
