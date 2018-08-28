@@ -22,7 +22,8 @@ $ sudo docker run \
  -e "HTTPS_PROXY=<host>:<port>" \
  -u $(id -u) \
  -v /tmp:/tmp \
- -v /home:/home/$USER \
+ -v /home:/home:ro \
+ -v /home/$USER:/home/$USER:rw \
  -v /etc/group:/etc/group:ro \
  -v /etc/passwd:/etc/passwd:ro \
  -v /etc/shadow:/etc/shadow:ro \
