@@ -5,8 +5,8 @@ MAINTAINER Armando Basile <armando@integrazioneweb.com>
 ENTRYPOINT ["/usr/bin/monodevelop"]
 
 # setup proxy variables
-ARG HTTP_PROXY
-ARG HTTPS_PROXY
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
 
 # Install Monodevelop
 RUN \
