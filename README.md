@@ -31,7 +31,7 @@ $ sudo docker run \
  armandob/monodevelop-docker
 
 ```
-_to add a single host to ip mapping use_ ```--add-host=<host>:<ip_address>```
+_to add a single host to ip mapping use_ ```--add-host=<host>:<ip_address>``` 
 _es:_ ```--add-host=addins.monodevelop.com:40.123.47.58```
 
 
