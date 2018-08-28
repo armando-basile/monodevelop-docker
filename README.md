@@ -2,9 +2,10 @@
 Dockerfile for monodevelop build
 
 
-to build image locally copy Dockerfile in a folder and use: 
-```$ sudo docker build -t armandob/monodevelop-docker . ```
-
+to build image locally copy Dockerfile in a folder and use 
+```
+$ sudo docker build -t armandob/monodevelop-docker . 
+```
 _NB: do not forget the point at the end_
 
 
