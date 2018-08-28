@@ -12,6 +12,7 @@ _NB: do not forget the point at the end_
 to run image use
 ```
 $ sudo docker run \
+ --name monodevelop-docker-container \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
@@ -26,3 +27,9 @@ $ sudo docker run \
 
 ```
 
+
+to change gtk theme settings use follow command (while is running image)
+```
+$ sudo docker exec -it monodevelop-docker-container lxappearance
+
+```
