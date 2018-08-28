@@ -1,5 +1,5 @@
 # monodevelop-docker
-Dockerfile for monodevelop build
+Dockerfile for Mono 5, .Net Core 2 and Monodevelop 7
 
 
 to build image locally copy Dockerfile in a folder and use 
@@ -31,7 +31,7 @@ $ sudo docker run \
  armandob/monodevelop-docker
 
 ```
-_to add a single host to ip mapping use --add-host=<host>:<ip_address> es: --add-host=addins.monodevelop.com:40.123.47.58_
+_to add a single host to ip mapping use_ ```--add-host=<host>:<ip_address>``` _es:_ ```--add-host=addins.monodevelop.com:40.123.47.58```
 
 
 to change gtk theme settings use follow command (while is running image)
