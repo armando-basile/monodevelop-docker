@@ -4,7 +4,10 @@ Dockerfile for monodevelop build
 
 to build image locally copy Dockerfile in a folder and use 
 ```
-$ sudo docker build -t armandob/monodevelop-docker . 
+$ sudo docker build \
+ --build-arg HTTP_PROXY="<host>:<port>" \
+ --build-arg HTTPS_PROXY="<host>:<port>" \
+ -t armandob/monodevelop-docker . 
 ```
 _NB: do not forget the point at the end_
 
@@ -15,6 +18,8 @@ $ sudo docker run \
  --name monodevelop-docker-container \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
+ -e "HTTP_PROXY=<host>:<port>" \
+ -e "HTTPS_PROXY=<host>:<port>" \
  -u $(id -u) \
  -v /tmp:/tmp \
  -v /home:/home/$USER \
@@ -26,6 +31,7 @@ $ sudo docker run \
  armandob/monodevelop-docker
 
 ```
+_to add a single host to ip mapping use --add-host=<host>:<ip_address> es: --add-host=addins.monodevelop.com:40.123.47.58 _
 
 
 to change gtk theme settings use follow command (while is running image)
