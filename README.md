@@ -31,7 +31,7 @@ $ sudo docker run \
  armandob/monodevelop-docker
 
 ```
-_to add a single host to ip mapping use --add-host=<host>:<ip_address> es: --add-host=addins.monodevelop.com:40.123.47.58 _
+_to add a single host to ip mapping use --add-host=<host>:<ip_address> es: --add-host=addins.monodevelop.com:40.123.47.58_
 
 
 to change gtk theme settings use follow command (while is running image)
