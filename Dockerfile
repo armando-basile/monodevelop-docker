@@ -13,7 +13,7 @@ RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
     apt-get update && \
-    apt-get install -y monodevelop monodevelop-nunit mate-icon-theme-faenza lxappearance && \
+    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol mate-icon-theme-faenza lxappearance && \
     rm -rf /var/lib/apt/lists/*
 
 
