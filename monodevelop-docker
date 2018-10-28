@@ -1,0 +1,35 @@
+#!/bin/bash
+
+DOCKERCONTAINER="monodevelop-docker-container"
+COUNTER=0
+
+# check for empty docker container
+while [  $COUNTER -lt 100 ]; do
+    # increase counter 
+    let COUNTER=COUNTER+1 
+    # check for presence of process with specific docker container
+    if ! pgrep -f "$DOCKERCONTAINER$COUNTER" >/dev/null 2>&1 ; then
+        # process not present, use this docker container to run
+        echo -e "founded empty docker container: $DOCKERCONTAINER$COUNTER"
+        break
+    else
+        # process with this specific docker container already run, skip it
+        echo -e "docker container $DOCKERCONTAINER$COUNTER already in use"
+    fi
+done
+
+# run docker with specific docker container founded
+sudo docker run \
+ --name $DOCKERCONTAINER$COUNTER \
+ -it --rm \
+ -e "DISPLAY=$DISPLAY" \
+ -u $(id -u) \
+ -v /tmp:/tmp \
+ -v /home:/home:ro \
+ -v /home/$USER:/home/$USER:rw \
+ -v /etc/group:/etc/group:ro \
+ -v /etc/passwd:/etc/passwd:ro \
+ -v /etc/shadow:/etc/shadow:ro \
+ -v /etc/sudoers.d:/etc/sudoers.d:ro \
+ -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+ armandob/monodevelop-docker
