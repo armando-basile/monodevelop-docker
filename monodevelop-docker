@@ -21,6 +21,7 @@ done
 # run docker with specific docker container founded
 sudo docker run \
  --name $DOCKERCONTAINER$COUNTER \
+ --net=host \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \

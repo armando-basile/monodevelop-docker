@@ -18,6 +18,7 @@ _NB: do not forget the point at the end_
 ```
 $ sudo docker run \
  --name monodevelop-docker-container \
+ --net=host \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -e "HTTP_PROXY=<host>:<port>" \

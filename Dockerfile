@@ -4,6 +4,8 @@ MAINTAINER Armando Basile <armando@integrazioneweb.com>
 
 ENTRYPOINT ["/usr/bin/monodevelop"]
 
+EXPOSE 8080
+
 # setup proxy variables
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
@@ -13,7 +15,7 @@ RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
     apt-get update && \
-    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol mate-icon-theme-faenza lxappearance && \
+    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol mate-icon-theme-faenza lxappearance mono-xsp4 && \
     rm -rf /var/lib/apt/lists/*
 
 
