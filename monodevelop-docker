@@ -26,6 +26,7 @@ sudo docker run \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
  -v /tmp:/tmp \
+ -v /opt:/opt \
  -v /home:/home:ro \
  -v /home/$USER:/home/$USER:rw \
  -v /etc/group:/etc/group:ro \
