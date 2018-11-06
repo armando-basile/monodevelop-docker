@@ -39,6 +39,10 @@ _to add a single host to ip mapping use_ ```--add-host=<host>:<ip_address>```
 
 _es:_ ```--add-host=addins.monodevelop.com:40.123.47.58```
 
+_to share other folders with docker container use_ ```-v <host folder path>:<docker folder path>```
+
+_es: to share /opt folder, add_ ```-v /opt:/opt```
+
 
 #### to change gtk theme settings use follow command (while is running image)
 ```
