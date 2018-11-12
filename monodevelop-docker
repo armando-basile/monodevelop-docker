@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# use lsusb to detect bus and device info to put here
+DEVICE=/dev/bus/usb/002/006
+
 DOCKERCONTAINER="monodevelop-docker-container"
 COUNTER=0
 
@@ -22,6 +25,7 @@ done
 sudo docker run \
  --name $DOCKERCONTAINER$COUNTER \
  --net=host \
+ --device=$DEVICE \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
