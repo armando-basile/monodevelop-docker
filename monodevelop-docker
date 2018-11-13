@@ -1,8 +1,5 @@
 #!/bin/bash
 
-# use lsusb to detect bus and device info to put here
-DEVICE=/dev/bus/usb/002/006
-
 DOCKERCONTAINER="monodevelop-docker-container"
 COUNTER=0
 
@@ -25,7 +22,6 @@ done
 sudo docker run \
  --name $DOCKERCONTAINER$COUNTER \
  --net=host \
- --device=$DEVICE \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
  -u $(id -u) \
@@ -38,4 +34,4 @@ sudo docker run \
  -v /etc/shadow:/etc/shadow:ro \
  -v /etc/sudoers.d:/etc/sudoers.d:ro \
  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
- armandob/monodevelop-docker
+ armandob/monodevelop-docker "$@"
