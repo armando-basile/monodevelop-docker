@@ -16,7 +16,7 @@ RUN \
     export https_proxy="$HTTPS_PROXY" && \
     apt-get update && \
     apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol \
-        mate-icon-theme-faenza lxappearance mono-xsp4 && \
+        mate-icon-theme-faenza lxappearance mono-xsp4 webkit-sharp && \
     rm -rf /var/lib/apt/lists/*
 
 
