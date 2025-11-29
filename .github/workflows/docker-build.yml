@@ -15,7 +15,7 @@ jobs:
       - name: Extract version from Dockerfile
         id: extract-version
         run: |
-          VERSION=$(grep 'org.opencontainers.image.version' Dockerfile | sed 's/.*="//;s/"$//;s/ .*//')
+          VERSION=$(sed -n 's/.*org.opencontainers.image.version="\([^"]*\)".*/\1/p' Dockerfile)
           echo "VERSION=$VERSION" >> $GITHUB_ENV
 
       - name: Login to Docker Hub
