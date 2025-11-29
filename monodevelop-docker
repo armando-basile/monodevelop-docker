@@ -1,5 +1,8 @@
 #!/bin/bash
 
+# Enable local X11 connections
+xhost +local:
+
 DOCKERCONTAINER="monodevelop-docker-container"
 COUNTER=0
 MAX_COUNTER=100
@@ -10,8 +13,8 @@ while [  $COUNTER -lt $MAX_COUNTER ]; do
     let COUNTER=COUNTER+1 
     CONTAINER_NAME="$DOCKERCONTAINER$COUNTER"
 
-    if podman ps -a --filter name=^$CONTAINER_NAME$ --format "{{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
-        echo "Container $CONTAINER_NAME già in uso o esistente."
+    
+    if sudo docker ps -a --filter name=^$CONTAINER_NAME$ --format "{{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
         # process with this specific container already run, skip it
         echo -e "container $CONTAINER_NAME already in use"
     else
@@ -30,11 +33,12 @@ fi
 # -e "HTTPS_PROXY=<host>:<port>" \
 
 # run docker with specific docker container founded
-podman run \
+sudo docker run \
  --name $CONTAINER_NAME \
  --net=host \
  -it --rm \
  -e "DISPLAY=$DISPLAY" \
+ -e "XAUTHORITY=/home/$USER/.Xauthority" \
  -u $(id -u) \
  -v /tmp:/tmp \
  -v /opt:/opt \

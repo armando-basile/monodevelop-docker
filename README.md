@@ -1,7 +1,7 @@
 ![Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Monodevelop_Logo.svg/240px-Monodevelop_Logo.svg.png)
 
 # monodevelop-docker
-Dockerfile for Mono 6.12 and Monodevelop 7.8.4.1 (no .NET Core)
+Dockerfile for Mono 6.12 and Monodevelop 7.8.4 (no .NET Core)
 
 
 #### to build image locally copy Dockerfile in a folder and use 
@@ -31,8 +31,8 @@ $ sudo docker run \
  -e "HTTPS_PROXY=<host>:<port>" \
  -u $(id -u) \
  -v /tmp:/tmp \
- -v /home:/home:ro \
- -v /home/$USER:/home/$USER:rw \
+ -v /opt:/opt \
+  -v /home/$USER:/home/$USER:rw \
  -v $HOME/.Xauthority:/root/.Xauthority:ro \
  -v /etc/group:/etc/group:ro \
  -v /etc/passwd:/etc/passwd:ro \
