@@ -8,10 +8,14 @@ ENV http_proxy=$HTTP_PROXY
 ENV https_proxy=$HTTPS_PROXY
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Installa dipendenze per build MonoDevelop e Mono
+# Installa dipendenze base e aggiungi repo Mono per latest Mono durante build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        gnupg ca-certificates wget tar bzip2 git automake libtool intltool make g++ cmake libssh2-1-dev \
+        gnupg ca-certificates wget curl tar bzip2 git automake libtool intltool make g++ cmake libssh2-1-dev && \
+    curl -fsSL https://download.mono-project.com/repo/xamarin.gpg | gpg --dearmor -o /usr/share/keyrings/mono-official-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
         mono-complete gtk-sharp2 fsharp && \
     rm -rf /var/lib/apt/lists/*
 
@@ -25,7 +29,6 @@ RUN wget https://download.mono-project.com/sources/monodevelop/monodevelop-7.8.4
     cd .. && \
     rm -rf monodevelop-7.8.4.1 monodevelop-7.8.4.1.tar.bz2
 
-
 # Stage 2: Runtime image ottimizzata
 FROM ubuntu:20.04
 
@@ -38,13 +41,15 @@ ENV DEBIAN_FRONTEND=noninteractive
 
 # Installa runtime essenziali: Mono, XSP4, temi, etc.
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends wget gnupg ca-certificates curl && \
-    # Aggiungi repo Mono ufficiale per latest Mono
-    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
-    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get install -y --no-install-recommends wget gnupg ca-certificates curl software-properties-common && \
+    # Aggiungi repo Mono ufficiale per latest Mono con metodo sicuro (no keyserver)
+    curl -fsSL https://download.mono-project.com/repo/xamarin.gpg | gpg --dearmor -o /usr/share/keyrings/mono-official-archive-keyring.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
+    # Aggiungi PPA per Papirus icon theme
+    add-apt-repository ppa:papirus/papirus -y && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        mono-complete mono-xsp4 webkit-sharp mate-icon-theme-faenza lxappearance \
+        mono-complete mono-xsp4 lxappearance papirus-icon-theme \
         libc6 libcurl4 libgcc1 libgssapi-krb5-2 libicu66 libssl1.1 libstdc++6 libunwind8 libuuid1 zlib1g && \
     rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
