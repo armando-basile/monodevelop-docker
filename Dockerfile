@@ -17,16 +17,18 @@ RUN apt-get update && \
     echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        mono-complete gtk-sharp2 fsharp monodoc-base && \
+        mono-complete gtk-sharp2 fsharp monodoc-base ca-certificates-mono && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, e build
+# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, sync certs, e build
 RUN git clone https://github.com/mono/monodevelop.git && \
     cd monodevelop && \
     git checkout monodevelop-7.8.4.1 && \
     git config --global url."https://".insteadOf git:// && \
     git submodule update --init --recursive && \
     ./configure --prefix=/usr && \
+    apt-get update && apt-get install -y ca-certificates && \
+    cert-sync /etc/ssl/certs/ca-certificates.crt && \
     make && \
     make install && \
     cd .. && \
