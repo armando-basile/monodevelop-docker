@@ -18,8 +18,12 @@ while [  $COUNTER -lt 100 ]; do
     fi
 done
 
+# add this lines for proxy
+# -e "HTTP_PROXY=<host>:<port>" \
+# -e "HTTPS_PROXY=<host>:<port>" \
+
 # run docker with specific docker container founded
-sudo docker run \
+docker run \
  --name $DOCKERCONTAINER$COUNTER \
  --net=host \
  -it --rm \
@@ -29,6 +33,7 @@ sudo docker run \
  -v /opt:/opt \
  -v /home:/home:ro \
  -v /home/$USER:/home/$USER:rw \
+ -v $HOME/.Xauthority:/root/.Xauthority:ro \
  -v /etc/group:/etc/group:ro \
  -v /etc/passwd:/etc/passwd:ro \
  -v /etc/shadow:/etc/shadow:ro \

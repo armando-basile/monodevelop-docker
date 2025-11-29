@@ -44,6 +44,10 @@ _to share other folders with docker container use_ ```-v <host folder path>:<doc
 
 _es: to share /opt folder, add_ ```-v /opt:/opt```
 
+#### to use desktop integration
+- copy _desktop-files/monodevelop.png_ into _$HOME/.local/share/pixmaps_ folder
+- copy _monodevelop-docker_ script into _$HOME/.local/bin_ folder
+- copy _desktop-files/monodevelop.desktop_ into _$HOME/.local/share/applications_ folder
 
 #### to change gtk theme settings use follow command (while is running image)
 ```

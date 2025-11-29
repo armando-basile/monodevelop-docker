@@ -17,7 +17,7 @@ RUN apt-get update && \
     echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        mono-complete gtk-sharp2 gnome-sharp2 fsharp referenceassemblies-pcl && \
+        mono-complete gtk-sharp2 fsharp monodoc-base && \
     rm -rf /var/lib/apt/lists/*
 
 # Clone repo Git, checkout tag 7.8.4.1 e build

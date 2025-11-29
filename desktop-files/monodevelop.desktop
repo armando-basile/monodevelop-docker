@@ -1,0 +1,10 @@
+[Desktop Entry]
+Version=1.0
+Name=MonoDevelop
+Comment=Avvia MonoDevelop da container Docker
+Exec=/home/armando/.local/bin/monodevelop-docker
+Icon=monodevelop
+Terminal=false
+Type=Application
+Categories=Development;IDE;
+StartupNotify=true
