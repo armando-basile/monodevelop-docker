@@ -1,4 +1,4 @@
-FROM debian:buster
+FROM ubuntu:20.04
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
@@ -14,17 +14,16 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Update sources to archive
-RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
-    echo "deb http://archive.debian.org/debian buster-updates main contrib non-free" >> /etc/apt/sources.list
+# Update sources to old-releases since 20.04 is EOL for standard support in 2025
+RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
 
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
-    apt-get install -y --allow-unauthenticated wget gnupg ca-certificates dpkg curl && \
+    apt-get update && \
+    apt-get install -y wget gnupg ca-certificates dpkg curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Install libjpeg62-turbo from Debian archive
@@ -35,17 +34,25 @@ RUN \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono repository for Debian Buster
+# Install mate-icon-theme-faenza from Ubuntu bionic pool (since not in focal)
+RUN \
+    export http_proxy="$HTTP_PROXY" && \
+    export https_proxy="$HTTPS_PROXY" && \
+    wget http://old-releases.ubuntu.com/ubuntu/pool/universe/m/mate-icon-theme-faenza/mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb && \
+    dpkg -i mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb && \
+    rm mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb
+
+# Add Mono repository for vs-bionic (includes MonoDevelop)
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/debian buster main" > /etc/apt/sources.list.d/mono-official-vs.list
+RUN echo "deb https://download.mono-project.com/repo/ubuntu vs-bionic main" > /etc/apt/sources.list.d/mono-official-vs.list
 
 # Install MonoDevelop and related packages
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
-    apt-get install -y --allow-unauthenticated monodevelop monodevelop-nunit monodevelop-versioncontrol \
-        mate-icon-theme-faenza lxappearance mono-xsp4 gnome-terminal && \
+    apt-get update && \
+    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol \
+        lxappearance mono-xsp4 gnome-terminal && \
     rm -rf /var/lib/apt/lists/*
 
 # Fix gnome-terminal for debugging
@@ -58,17 +65,17 @@ RUN mkdir -p /root/.config/MonoDevelop/AddIns/MonoDevelop.UserInterfaceTheme/Xam
     && curl -O https://raw.githubusercontent.com/mono/guiunit/master/guiunit/MonoDevelop.GuiUnit/gtk-xamarin-dark/gtk-widgets.css \
     && curl -O https://raw.githubusercontent.com/mono/guiunit/master/guiunit/MonoDevelop.GuiUnit/gtk-xamarin-dark/gtk-widgets-dark.css
 
-# Install .NET CLI dependencies (WITH PROXY)
+# Install .NET CLI dependencies (WITH PROXY, adjusted for Ubuntu 20.04)
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
-    apt-get install -y --allow-unauthenticated --no-install-recommends \
+    apt-get update \
+    && apt-get install -y --no-install-recommends \
         libc6 \
         libcurl4 \
         libgcc1 \
         libgssapi-krb5-2 \
-        libicu63 \
+        libicu66 \
         liblttng-ust0 \
         libssl1.1 \
         libstdc++6 \
@@ -77,10 +84,9 @@ RUN \
         zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Install .NET Core SDK (updated to a compatible version; original was 2.1, but for Mono 6.12, using .NET 6 as example - adjust if needed)
+# Install .NET Core SDK
 ENV DOTNET_SDK_VERSION=6.0.427
 ENV DOTNET_SDK_DOWNLOAD_URL=https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
-# Note: SHA would need updating for security; omitted for brevity
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
