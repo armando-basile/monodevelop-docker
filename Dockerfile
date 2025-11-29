@@ -20,10 +20,12 @@ RUN apt-get update && \
         mono-complete gtk-sharp2 fsharp monodoc-base && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone repo Git, checkout tag 7.8.4.1 e build
+# Clone repo Git, checkout tag 7.8.4.1, fix submodule URLs to https, update submodules, e build
 RUN git clone https://github.com/mono/monodevelop.git && \
     cd monodevelop && \
     git checkout monodevelop-7.8.4.1 && \
+    sed -i 's|git://github.com|https://github.com|g' .gitmodules && \
+    git submodule update --init --recursive && \
     ./configure --prefix=/usr && \
     make && \
     make install && \
@@ -32,6 +34,12 @@ RUN git clone https://github.com/mono/monodevelop.git && \
 
 # Stage 2: Runtime image ottimizzata
 FROM ubuntu:20.04
+
+LABEL maintainer="armando-basile" \
+      org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
+      org.opencontainers.image.version="7.8.4.1-1" \
+      org.opencontainers.image.source="https://github.com/armando-basile/monodevelop-docker" \
+      org.opencontainers.image.licenses="MIT"
 
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""

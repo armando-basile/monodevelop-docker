@@ -10,9 +10,13 @@ $ sudo docker build \
  -t armandob/monodevelop-docker:latest . 
 
 ```
-
 _NB: do not forget the point at the end_
 
+If you want only test build process, to remove image and all local files after build test, can use
+```
+$ sudo docker rmi armandob/monodevelop-docker:latest
+$ sudo docker builder prune -f
+```
 
 #### to run image use
 ```
