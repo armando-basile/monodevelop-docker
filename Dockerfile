@@ -14,10 +14,6 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Update sources to old-releases since 20.04 is EOL for standard support in 2025
-RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
-    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
@@ -34,17 +30,17 @@ RUN \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Install mate-icon-theme-faenza from Ubuntu bionic pool (since not in focal)
+# Install mate-icon-theme-faenza from Ubuntu archive
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget http://old-releases.ubuntu.com/ubuntu/pool/universe/m/mate-icon-theme-faenza/mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb && \
-    dpkg -i mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb && \
-    rm mate-icon-theme-faenza_1.20.0+dfsg1-2_all.deb
+    wget http://archive.ubuntu.com/ubuntu/pool/universe/m/mate-icon-theme-faenza/mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb && \
+    dpkg -i mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb && \
+    rm mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb
 
-# Add Mono repository for vs-bionic (includes MonoDevelop)
+# Add Mono repository for Ubuntu 20.04
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/ubuntu vs-bionic main" > /etc/apt/sources.list.d/mono-official-vs.list
+RUN echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list
 
 # Install MonoDevelop and related packages
 RUN \
@@ -65,7 +61,7 @@ RUN mkdir -p /root/.config/MonoDevelop/AddIns/MonoDevelop.UserInterfaceTheme/Xam
     && curl -O https://raw.githubusercontent.com/mono/guiunit/master/guiunit/MonoDevelop.GuiUnit/gtk-xamarin-dark/gtk-widgets.css \
     && curl -O https://raw.githubusercontent.com/mono/guiunit/master/guiunit/MonoDevelop.GuiUnit/gtk-xamarin-dark/gtk-widgets-dark.css
 
-# Install .NET CLI dependencies (WITH PROXY, adjusted for Ubuntu 20.04)
+# Install .NET CLI dependencies (WITH PROXY)
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
