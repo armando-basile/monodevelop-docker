@@ -52,7 +52,7 @@ RUN \
     rm -rf /var/lib/apt/lists/*
 
 # Fix gnome-terminal for debugging
-#RUN mkdir -p /usr/lib/gnome-terminal && ln -s /usr/libexec/gnome-terminal-server /usr/lib/gnome-terminal/
+RUN mkdir -p /usr/lib/gnome-terminal && ln -sf /usr/libexec/gnome-terminal-server /usr/lib/gnome-terminal/gnome-terminal-server
 
 # Install Xamarin-Dark theme files
 RUN mkdir -p /root/.config/MonoDevelop/AddIns/MonoDevelop.UserInterfaceTheme/Xamarin-Dark \
@@ -68,12 +68,12 @@ RUN \
     apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
     apt-get install -y --allow-unauthenticated --no-install-recommends \
         libc6 \
-        libcurl4 \
+        libcurl3 \
         libgcc1 \
         libgssapi-krb5-2 \
         libicu63 \
         liblttng-ust0 \
-        libssl1.1 \
+        libssl1.0.0 \
         libstdc++6 \
         libunwind8 \
         libuuid1 \
