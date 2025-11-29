@@ -1,4 +1,3 @@
-#Stage 1: Build stage non necessario, usiamo apt per install
 FROM ubuntu:20.04
 
 ARG HTTP_PROXY=""
@@ -8,14 +7,12 @@ ENV http_proxy=$HTTP_PROXY
 ENV https_proxy=$HTTPS_PROXY
 ENV DEBIAN_FRONTEND=noninteractive
 
-# Aggiungi repo Mono official (preview per versione più recente)
+# Aggiungi repo Mono vs-bionic per MonoDevelop 7.8 su 20.04
 RUN apt-get update && \
-    apt-get install -y --no-install-recommends gnupg ca-certificates curl && \
-    curl -fsSL https://download.mono-project.com/repo/xamarin.gpg | gpg --dearmor -o /usr/share/keyrings/mono-official-archive-keyring.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu preview-focal main" > /etc/apt/sources.list.d/mono-official-preview.list && \
-    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get install -y --no-install-recommends apt-transport-https dirmngr gnupg ca-certificates curl software-properties-common && \
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    echo "deb https://download.mono-project.com/repo/ubuntu vs-bionic main" | tee /etc/apt/sources.list.d/mono-official-vs.list && \
     # Aggiungi PPA per Papirus icon theme
-    apt-get update && apt-get install -y --no-install-recommends software-properties-common && \
     add-apt-repository ppa:papirus/papirus -y && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
@@ -25,7 +22,7 @@ RUN apt-get update && \
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
-      org.opencontainers.image.version="7.8.4.1-1" \
+      org.opencontainers.image.version="7.8.4-1" \
       org.opencontainers.image.source="https://github.com/armando-basile/monodevelop-docker" \
       org.opencontainers.image.licenses="MIT"
 
