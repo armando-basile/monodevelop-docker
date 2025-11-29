@@ -14,17 +14,12 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Remove updates, backports, and security lines to avoid 404 after standard support ends
-RUN sed -i '/focal-updates/d' /etc/apt/sources.list && \
-    sed -i '/focal-backports/d' /etc/apt/sources.list && \
-    sed -i '/focal-security/d' /etc/apt/sources.list
-
-# Install dependencies and tools
+# Install dependencies and tools (removed gnupg to avoid dependency issues)
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
     apt-get update && \
-    apt-get install -y wget gnupg ca-certificates dpkg curl && \
+    apt-get install -y wget ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Install libjpeg62-turbo from Debian archive
@@ -35,9 +30,12 @@ RUN \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono repository for Ubuntu 20.04
-RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list
+# Add Mono repository using modern signed-by method (no gnupg needed)
+RUN \
+    export http_proxy="$HTTP_PROXY" && \
+    export https_proxy="$HTTPS_PROXY" && \
+    wget -O /usr/share/keyrings/mono-official-archive.gpg https://download.mono-project.com/repo/xamarin.gpg && \
+    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list
 
 # Install MonoDevelop and related packages
 RUN \
