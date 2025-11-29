@@ -11,23 +11,24 @@ ENV DEBIAN_FRONTEND=noninteractive
 # Installa dipendenze base e aggiungi repo Mono per latest Mono durante build
 RUN apt-get update && \
     apt-get install -y --no-install-recommends \
-        gnupg ca-certificates wget curl tar bzip2 git automake libtool intltool make g++ cmake libssh2-1-dev && \
+        gnupg ca-certificates wget curl tar bzip2 git automake libtool intltool make g++ cmake libssh2-1-dev \
+        autoconf zlib1g-dev libglade2-dev && \
     curl -fsSL https://download.mono-project.com/repo/xamarin.gpg | gpg --dearmor -o /usr/share/keyrings/mono-official-archive-keyring.gpg && \
     echo "deb [signed-by=/usr/share/keyrings/mono-official-archive-keyring.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
     apt-get update && \
     apt-get install -y --no-install-recommends \
-        mono-complete gtk-sharp2 fsharp && \
+        mono-complete gtk-sharp2 gnome-sharp2 fsharp referenceassemblies-pcl && \
     rm -rf /var/lib/apt/lists/*
 
-# Download e build MonoDevelop 7.8.4.1 da source
-RUN wget https://download.mono-project.com/sources/monodevelop/monodevelop-7.8.4.1.tar.bz2 && \
-    tar xjf monodevelop-7.8.4.1.tar.bz2 && \
-    cd monodevelop-7.8.4.1 && \
+# Clone repo Git, checkout tag 7.8.4.1 e build
+RUN git clone https://github.com/mono/monodevelop.git && \
+    cd monodevelop && \
+    git checkout monodevelop-7.8.4.1 && \
     ./configure --prefix=/usr && \
     make && \
     make install && \
     cd .. && \
-    rm -rf monodevelop-7.8.4.1 monodevelop-7.8.4.1.tar.bz2
+    rm -rf monodevelop
 
 # Stage 2: Runtime image ottimizzata
 FROM ubuntu:20.04
