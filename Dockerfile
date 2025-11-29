@@ -14,42 +14,47 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Remove updates/backports/security to avoid version conflicts
-RUN sed -i '/focal-updates/d' /etc/apt/sources.list && \
-    sed -i '/focal-backports/d' /etc/apt/sources.list && \
-    sed -i '/focal-security/d' /etc/apt/sources.list
+# Update sources to old-releases for EOL support
+RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+
+# Update and upgrade to resolve dependencies
+RUN \
+    export http_proxy="$HTTP_PROXY" && \
+    export https_proxy="$HTTPS_PROXY" && \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get dist-upgrade -y --allow-unauthenticated && \
+    rm -rf /var/lib/apt/lists/*
 
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update && \
-    apt-get install -y wget gnupg ca-certificates curl && \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated wget gnupg ca-certificates curl dpkg && \
     rm -rf /var/lib/apt/lists/*
 
-# Install libjpeg62-turbo from NVIDIA mirror
+# Install libjpeg62-turbo from Debian archive
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/pool/upstream/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
+    wget http://archive.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono preview repository with signed-by (for MonoDevelop)
+# Add Mono key and repository for Debian Buster
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget -O /tmp/xamarin.gpg https://download.mono-project.com/repo/xamarin.gpg && \
-    gpg --homedir /tmp --no-default-keyring --keyring /usr/share/keyrings/mono-official-archive.gpg --import /tmp/xamarin.gpg && \
-    rm /tmp/xamarin.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive.gpg] https://download.mono-project.com/repo/ubuntu preview-focal main" > /etc/apt/sources.list.d/mono-official-preview.list
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    echo "deb https://download.mono-project.com/repo/debian buster main" > /etc/apt/sources.list.d/mono-official-vs.list
 
 # Install MonoDevelop and related packages
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update && \
-    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated monodevelop monodevelop-nunit monodevelop-versioncontrol \
         lxappearance mono-xsp4 gnome-terminal && \
     rm -rf /var/lib/apt/lists/*
 
@@ -67,8 +72,8 @@ RUN mkdir -p /root/.config/MonoDevelop/AddIns/MonoDevelop.UserInterfaceTheme/Xam
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update \
-    && apt-get install -y --no-install-recommends \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated --no-install-recommends \
         libc6 \
         libcurl4 \
         libgcc1 \
@@ -82,9 +87,9 @@ RUN \
         zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Install .NET Core SDK (updated to compatible version)
-ENV DOTNET_SDK_VERSION 6.0.427
-ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
+# Install .NET Core SDK
+ENV DOTNET_SDK_VERSION=6.0.427
+ENV DOTNET_SDK_DOWNLOAD_URL=https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
@@ -107,4 +112,4 @@ RUN mkdir warmup \
     && rm -rf warmup \
     && rm -rf /tmp/NuGetScratch
 
-ENV RestoreUseSkipNonexistentTargets false
+ENV RestoreUseSkipNonexistentTargets=false
