@@ -1,4 +1,4 @@
-FROM ubuntu:20.04
+FROM debian:10
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
@@ -14,27 +14,20 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Update sources to old-releases for EOL support
-RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
-    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-
-# Update and upgrade to resolve dependencies
-RUN \
-    export http_proxy="$HTTP_PROXY" && \
-    export https_proxy="$HTTPS_PROXY" && \
-    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
-    apt-get dist-upgrade -y --allow-unauthenticated && \
-    rm -rf /var/lib/apt/lists/*
+# Update sources to archive for Buster EOL
+RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian buster-updates main contrib non-free" >> /etc/apt/sources.list && \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false
 
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
     apt-get install -y --allow-unauthenticated wget gnupg ca-certificates curl dpkg && \
     rm -rf /var/lib/apt/lists/*
 
-# Install libjpeg62-turbo from Debian archive
+# Install libjpeg62-turbo from archive
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
@@ -42,7 +35,7 @@ RUN \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono key and repository for Debian Buster
+# Add Mono Buster repository
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
@@ -78,7 +71,7 @@ RUN \
         libcurl4 \
         libgcc1 \
         libgssapi-krb5-2 \
-        libicu66 \
+        libicu63 \
         liblttng-ust0 \
         libssl1.1 \
         libstdc++6 \
@@ -87,22 +80,24 @@ RUN \
         zlib1g \
     && rm -rf /var/lib/apt/lists/*
 
-# Install .NET Core SDK
-ENV DOTNET_SDK_VERSION=6.0.427
-ENV DOTNET_SDK_DOWNLOAD_URL=https://dotnetcli.azureedge.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
+# Install .NET Core SDK (original version 2.1 for compatibility)
+ENV DOTNET_SDK_VERSION 2.1.202
+ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
+ENV DOTNET_SDK_DOWNLOAD_SHA e785b9b488b5570708eb060f9a4cb5cf94597d99a8b0a3ee449d2e5df83771c1ba643a87db17ae6727d0e2acb401eca292fb8c68ad92eeb59d7f0d75eab1c20a
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    curl -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
+    curl --insecure -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
+    && echo "$DOTNET_SDK_DOWNLOAD_SHA dotnet.tar.gz" | sha512sum -c - \
     && mkdir -p /usr/share/dotnet \
     && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
     && rm dotnet.tar.gz \
     && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
 
 # Enable detection of running in a container
-ENV DOTNET_RUNNING_IN_CONTAINER=true
-ENV DOTNET_USE_POLLING_FILE_WATCHER=true
-ENV NUGET_XMLDOC_MODE=skip
+ENV DOTNET_RUNNING_IN_CONTAINER=true \
+    DOTNET_USE_POLLING_FILE_WATCHER=true \
+    NUGET_XMLDOC_MODE=skip
 
 # Trigger the population of the local package cache
 RUN mkdir warmup \
