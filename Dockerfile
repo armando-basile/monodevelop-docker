@@ -37,7 +37,7 @@ FROM ubuntu:20.04
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
-      org.opencontainers.image.version="7.8.4.1-1" \
+      org.opencontainers.image.version="7.8.4.1" \
       org.opencontainers.image.source="https://github.com/armando-basile/monodevelop-docker" \
       org.opencontainers.image.licenses="MIT"
 

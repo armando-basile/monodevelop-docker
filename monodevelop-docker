@@ -47,3 +47,9 @@ podman run \
  -v /etc/sudoers.d:/etc/sudoers.d:ro \
  -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
  armandob/monodevelop-docker "$@"
+
+# Check exit code
+if [ $? -ne 0 ]; then
+    echo "Error on podman exec."
+    exit 1
+fi
