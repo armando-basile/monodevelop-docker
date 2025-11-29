@@ -20,15 +20,15 @@ RUN apt-get update && \
         mono-complete gtk-sharp2 fsharp monodoc-base ca-certificates-mono && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, remove private NuGet feeds, sync certs, e build
+# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, remove private NuGet feeds from all NuGet.config, sync certs, e build
 RUN git clone https://github.com/mono/monodevelop.git && \
     cd monodevelop && \
     git checkout monodevelop-7.8.4.1 && \
     git config --global url."https://".insteadOf git:// && \
     git submodule update --init --recursive && \
-    sed -i '/key="vstest"/d' NuGet.config && \
-    sed -i '/key="templating"/d' NuGet.config && \
-    sed -i '/key="vssdk"/d' NuGet.config && \
+    find . -name NuGet.config -exec sed -i '/key\s*=\s*"vstest"/d' {} \; && \
+    find . -name NuGet.config -exec sed -i '/key\s*=\s*"templating"/d' {} \; && \
+    find . -name NuGet.config -exec sed -i '/key\s*=\s*"vssdk"/d' {} \; && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
     ./configure --prefix=/usr && \
     make && \
