@@ -14,6 +14,10 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
+# Update sources to old-releases for Ubuntu 20.04 in 2025
+RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
@@ -22,11 +26,11 @@ RUN \
     apt-get install -y wget gnupg ca-certificates dpkg curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install libjpeg62-turbo from Debian archive
+# Install libjpeg62-turbo from alternative mirror (Cumulus NVIDIA)
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget http://archive.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
+    wget https://download.nvidia.com/cumulus/apt.cumulusnetworks.com/pool/upstream/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
