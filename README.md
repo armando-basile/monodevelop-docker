@@ -1,5 +1,5 @@
 # monodevelop-docker
-Dockerfile for Mono 5, .Net Core 2 and Monodevelop 7
+Dockerfile for Mono 6.12 and Monodevelop 7.8.4.1 (no .NET Core)
 
 
 #### to build image locally copy Dockerfile in a folder and use 
@@ -7,7 +7,7 @@ Dockerfile for Mono 5, .Net Core 2 and Monodevelop 7
 $ sudo docker build \
  --build-arg HTTP_PROXY="<host>:<port>" \
  --build-arg HTTPS_PROXY="<host>:<port>" \
- -t armandob/monodevelop-docker . 
+ -t armandob/monodevelop-docker:latest . 
 
 ```
 
@@ -27,6 +27,7 @@ $ sudo docker run \
  -v /tmp:/tmp \
  -v /home:/home:ro \
  -v /home/$USER:/home/$USER:rw \
+ -v $HOME/.Xauthority:/root/.Xauthority:ro \
  -v /etc/group:/etc/group:ro \
  -v /etc/passwd:/etc/passwd:ro \
  -v /etc/shadow:/etc/shadow:ro \
