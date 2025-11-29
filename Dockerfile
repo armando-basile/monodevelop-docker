@@ -14,12 +14,17 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
+# Update sources to archive
+RUN echo "deb http://archive.debian.org/debian buster main contrib non-free" > /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian-security buster/updates main contrib non-free" >> /etc/apt/sources.list && \
+    echo "deb http://archive.debian.org/debian buster-updates main contrib non-free" >> /etc/apt/sources.list
+
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update && \
-    apt-get install -y wget gnupg ca-certificates dpkg curl && \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated wget gnupg ca-certificates dpkg curl && \
     rm -rf /var/lib/apt/lists/*
 
 # Install libjpeg62-turbo from Debian archive
@@ -38,8 +43,8 @@ RUN echo "deb https://download.mono-project.com/repo/debian buster main" > /etc/
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update && \
-    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated monodevelop monodevelop-nunit monodevelop-versioncontrol \
         mate-icon-theme-faenza lxappearance mono-xsp4 gnome-terminal && \
     rm -rf /var/lib/apt/lists/*
 
@@ -57,8 +62,8 @@ RUN mkdir -p /root/.config/MonoDevelop/AddIns/MonoDevelop.UserInterfaceTheme/Xam
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    apt-get update \
-    && apt-get install -y --no-install-recommends \
+    apt-get update -o Acquire::Check-Valid-Until=false -o Acquire::Check-Date=false && \
+    apt-get install -y --allow-unauthenticated --no-install-recommends \
         libc6 \
         libcurl4 \
         libgcc1 \
