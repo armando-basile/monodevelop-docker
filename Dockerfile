@@ -20,13 +20,13 @@ RUN apt-get update && \
         mono-complete gtk-sharp2 fsharp monodoc-base ca-certificates-mono && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, sync certs, replace deprecated MyGet source, e build
+# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, replace deprecated MyGet source in correct path, sync certs, e build
 RUN git clone https://github.com/mono/monodevelop.git && \
     cd monodevelop && \
     git checkout monodevelop-7.8.4.1 && \
     git config --global url."https://".insteadOf git:// && \
     git submodule update --init --recursive && \
-    sed -i 's/dotnet.myget.org/www.myget.org/g' main/build/NuGet.config && \
+    sed -i 's/dotnet.myget.org/www.myget.org/g' NuGet.config && \
     cert-sync /etc/ssl/certs/ca-certificates.crt && \
     ./configure --prefix=/usr && \
     make && \
