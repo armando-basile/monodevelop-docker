@@ -14,28 +14,35 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Install dependencies and tools (removed gnupg to avoid dependency issues)
+# Remove updates and security lines to avoid version conflicts
+RUN sed -i '/focal-updates/d' /etc/apt/sources.list && \
+    sed -i '/focal-backports/d' /etc/apt/sources.list && \
+    sed -i '/focal-security/d' /etc/apt/sources.list
+
+# Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
     apt-get update && \
-    apt-get install -y wget ca-certificates curl && \
+    apt-get install -y wget gnupg ca-certificates curl && \
     rm -rf /var/lib/apt/lists/*
 
-# Install libjpeg62-turbo from Debian archive
+# Install libjpeg62-turbo from Debian
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget http://archive.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
+    wget http://deb.debian.org/debian/pool/main/l/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono repository using modern signed-by method (no gnupg needed)
+# Add Mono repository key
 RUN \
     export http_proxy="$HTTP_PROXY" && \
     export https_proxy="$HTTPS_PROXY" && \
-    wget -O /usr/share/keyrings/mono-official-archive.gpg https://download.mono-project.com/repo/xamarin.gpg && \
-    echo "deb [signed-by=/usr/share/keyrings/mono-official-archive.gpg] https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list
+    curl -s https://download.mono-project.com/repo/xamarin.gpg | apt-key add -
+
+# Add Mono preview repository for MonoDevelop
+RUN echo "deb https://download.mono-project.com/repo/ubuntu preview-focal main" > /etc/apt/sources.list.d/mono-official-preview.list
 
 # Install MonoDevelop and related packages
 RUN \
