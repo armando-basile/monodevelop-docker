@@ -25,6 +25,7 @@ RUN wget https://download.mono-project.com/sources/monodevelop/monodevelop-7.8.4
     cd .. && \
     rm -rf monodevelop-7.8.4.1 monodevelop-7.8.4.1.tar.bz2
 
+
 # Stage 2: Runtime image ottimizzata
 FROM ubuntu:20.04
 
