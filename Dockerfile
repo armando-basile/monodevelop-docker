@@ -14,10 +14,6 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Update sources to old-releases since 20.04 is EOL for standard support in 2025
-RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
-    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
-
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
