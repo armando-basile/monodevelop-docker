@@ -1,80 +1,56 @@
-FROM mono:5.12
+# Stage 1: Build MonoDevelop from source
+FROM ubuntu:20.04 AS builder
 
-MAINTAINER Armando Basile <armando@integrazioneweb.com>
-
-ENTRYPOINT ["/usr/bin/monodevelop"]
-
-EXPOSE 8080
-
-# setup proxy variables
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
-# Install Monodevelop
-RUN \
-    export http_proxy="$HTTP_PROXY" && \
-    export https_proxy="$HTTPS_PROXY" && \
-    apt-get update && \
-    apt-get install -y monodevelop monodevelop-nunit monodevelop-versioncontrol \
-        mate-icon-theme-faenza lxappearance mono-xsp4 webkit-sharp && \
+ENV http_proxy=$HTTP_PROXY
+ENV https_proxy=$HTTPS_PROXY
+ENV DEBIAN_FRONTEND=noninteractive
+
+# Installa dipendenze per build MonoDevelop e Mono
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends \
+        gnupg ca-certificates wget tar bzip2 git automake libtool intltool make g++ cmake libssh2-1-dev \
+        mono-complete gtk-sharp2 fsharp && \
     rm -rf /var/lib/apt/lists/*
 
+# Download e build MonoDevelop 7.8.4.1 da source
+RUN wget https://download.mono-project.com/sources/monodevelop/monodevelop-7.8.4.1.tar.bz2 && \
+    tar xjf monodevelop-7.8.4.1.tar.bz2 && \
+    cd monodevelop-7.8.4.1 && \
+    ./configure --prefix=/usr && \
+    make && \
+    make install && \
+    cd .. && \
+    rm -rf monodevelop-7.8.4.1 monodevelop-7.8.4.1.tar.bz2
 
-# Install .NET CLI dependencies (WITH PROXY)
-RUN \
-    export http_proxy="$HTTP_PROXY" && \
-    export https_proxy="$HTTPS_PROXY" && \
-    apt-get update \
-    && apt-get install -y --no-install-recommends \
-        libc6 \
-        libcurl3 \
-        libgcc1 \
-        libgssapi-krb5-2 \
-        libicu52 \
-        liblttng-ust0 \
-        libssl1.0.0 \
-        libstdc++6 \
-        libunwind8 \
-        libuuid1 \
-        zlib1g \
-    && rm -rf /var/lib/apt/lists/*
+# Stage 2: Runtime image ottimizzata
+FROM ubuntu:20.04
 
+ARG HTTP_PROXY=""
+ARG HTTPS_PROXY=""
 
+ENV http_proxy=$HTTP_PROXY
+ENV https_proxy=$HTTPS_PROXY
+ENV DEBIAN_FRONTEND=noninteractive
 
-# Install .NET Core SDK
-ENV DOTNET_SDK_VERSION 2.1.202
-ENV DOTNET_SDK_DOWNLOAD_URL https://dotnetcli.blob.core.windows.net/dotnet/Sdk/$DOTNET_SDK_VERSION/dotnet-sdk-$DOTNET_SDK_VERSION-linux-x64.tar.gz
-ENV DOTNET_SDK_DOWNLOAD_SHA e785b9b488b5570708eb060f9a4cb5cf94597d99a8b0a3ee449d2e5df83771c1ba643a87db17ae6727d0e2acb401eca292fb8c68ad92eeb59d7f0d75eab1c20a
+# Installa runtime essenziali: Mono, XSP4, temi, etc.
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends wget gnupg ca-certificates curl && \
+    # Aggiungi repo Mono ufficiale per latest Mono
+    apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF && \
+    echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list && \
+    apt-get update && \
+    apt-get install -y --no-install-recommends \
+        mono-complete mono-xsp4 webkit-sharp mate-icon-theme-faenza lxappearance \
+        libc6 libcurl4 libgcc1 libgssapi-krb5-2 libicu66 libssl1.1 libstdc++6 libunwind8 libuuid1 zlib1g && \
+    rm -rf /var/lib/apt/lists/* /tmp/* /var/tmp/*
 
-# Get .NET Code
-RUN \
-    export http_proxy="$HTTP_PROXY" && \
-    export https_proxy="$HTTPS_PROXY" && \
-    curl --insecure -SL $DOTNET_SDK_DOWNLOAD_URL --output dotnet.tar.gz \
-    && echo "$DOTNET_SDK_DOWNLOAD_SHA dotnet.tar.gz" | sha512sum -c - \
-    && mkdir -p /usr/share/dotnet \
-    && tar -zxf dotnet.tar.gz -C /usr/share/dotnet \
-    && rm dotnet.tar.gz \
-    && ln -s /usr/share/dotnet/dotnet /usr/bin/dotnet
+# Copia MonoDevelop built dallo stage builder
+COPY --from=builder /usr/lib/monodevelop /usr/lib/monodevelop
+COPY --from=builder /usr/bin/monodevelop /usr/bin/monodevelop
+COPY --from=builder /usr/share/monodevelop /usr/share/monodevelop
 
-
-
-# Enable detection of running in a container
-ENV DOTNET_RUNNING_IN_CONTAINER=true \
-    # Enable correct mode for dotnet watch (only mode supported in a container)
-    DOTNET_USE_POLLING_FILE_WATCHER=true \
-    # Skip extraction of XML docs - generally not useful within an image/container - helps perfomance
-    NUGET_XMLDOC_MODE=skip
-
-# Trigger the population of the local package cache
-RUN mkdir warmup \
-    && cd warmup \
-    && dotnet new \
-    && cd .. \
-    && rm -rf warmup \
-    && rm -rf /tmp/NuGetScratch
-
-# Workaround for https://github.com/Microsoft/DockerTools/issues/87. This instructs NuGet to use 4.5 behavior in which
-# all errors when attempting to restore a project are ignored and treated as warnings instead. This allows the VS
-# tooling to use -nowarn:MSB3202 to ignore issues with the .dcproj project
-ENV RestoreUseSkipNonexistentTargets false
+EXPOSE 8080
+ENTRYPOINT ["/usr/bin/monodevelop"]
