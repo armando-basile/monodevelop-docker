@@ -20,11 +20,11 @@ RUN apt-get update && \
         mono-complete gtk-sharp2 fsharp monodoc-base && \
     rm -rf /var/lib/apt/lists/*
 
-# Clone repo Git, checkout tag 7.8.4.1, fix submodule URLs to https, update submodules, e build
+# Clone repo Git, checkout tag 7.8.4.1, force https instead of git protocol, update submodules, e build
 RUN git clone https://github.com/mono/monodevelop.git && \
     cd monodevelop && \
     git checkout monodevelop-7.8.4.1 && \
-    sed -i 's|git://github.com|https://github.com|g' .gitmodules && \
+    git config --global url."https://".insteadOf git:// && \
     git submodule update --init --recursive && \
     ./configure --prefix=/usr && \
     make && \
