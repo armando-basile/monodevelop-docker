@@ -1,8 +1,8 @@
-FROM ubuntu:20.04
+FROM debian:buster
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop Docker Image with latest Mono and Papirus icons" \
-      org.opencontainers.image.version="7.8.4-1" \
+      org.opencontainers.image.version="7.8.4-2" \
       org.opencontainers.image.source="https://github.com/armando-basile/monodevelop-docker" \
       org.opencontainers.image.licenses="MIT"
 
@@ -30,9 +30,9 @@ RUN \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
 
-# Add Mono repository for Ubuntu
+# Add Mono repository for Debian Buster
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
-RUN echo "deb https://download.mono-project.com/repo/ubuntu stable-focal main" > /etc/apt/sources.list.d/mono-official-stable.list
+RUN echo "deb https://download.mono-project.com/repo/debian buster main" > /etc/apt/sources.list.d/mono-official-vs.list
 
 # Install MonoDevelop and related packages
 RUN \
@@ -60,10 +60,10 @@ RUN \
     apt-get update \
     && apt-get install -y --no-install-recommends \
         libc6 \
-        libcurl3 \
+        libcurl4 \
         libgcc1 \
         libgssapi-krb5-2 \
-        libicu66 \
+        libicu63 \
         liblttng-ust0 \
         libssl1.1 \
         libstdc++6 \
