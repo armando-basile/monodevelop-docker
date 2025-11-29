@@ -1,1 +1,1 @@
-armando ALL=(ALL) NOPASSWD: /home/armando/.local/bin/monodevelop-docker
+armando ALL=(ALL) NOPASSWD: /usr/bin/docker run *, /usr/bin/docker ps *
