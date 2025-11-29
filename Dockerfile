@@ -14,6 +14,10 @@ EXPOSE 8080
 ARG HTTP_PROXY=""
 ARG HTTPS_PROXY=""
 
+# Update sources to old-releases since 20.04 is EOL for standard support in 2025
+RUN sed -i 's/archive.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list && \
+    sed -i 's/security.ubuntu.com/old-releases.ubuntu.com/g' /etc/apt/sources.list
+
 # Install dependencies and tools
 RUN \
     export http_proxy="$HTTP_PROXY" && \
@@ -29,14 +33,6 @@ RUN \
     wget http://archive.debian.org/debian/pool/main/libj/libjpeg-turbo/libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     dpkg -i libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb && \
     rm libjpeg62-turbo_1.5.2-2+deb10u1_amd64.deb
-
-# Install mate-icon-theme-faenza from Ubuntu archive
-RUN \
-    export http_proxy="$HTTP_PROXY" && \
-    export https_proxy="$HTTPS_PROXY" && \
-    wget http://archive.ubuntu.com/ubuntu/pool/universe/m/mate-icon-theme-faenza/mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb && \
-    dpkg -i mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb && \
-    rm mate-icon-theme-faenza_1.20.0+dfsg1-0ubuntu1_all.deb
 
 # Add Mono repository for Ubuntu 20.04
 RUN apt-key adv --keyserver hkp://keyserver.ubuntu.com:80 --recv-keys 3FA7E0328081BFF6A14DA29AA6A19B38D3D831EF
