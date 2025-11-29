@@ -1,7 +1,7 @@
 ![Logo](https://upload.wikimedia.org/wikipedia/commons/thumb/8/8d/Monodevelop_Logo.svg/240px-Monodevelop_Logo.svg.png)
 
 # monodevelop-docker
-Dockerfile for Mono 6.12 and Monodevelop 7.8.4 (no .NET Core)
+Dockerfile for Mono 6.12 and Monodevelop 7.8.4
 
 
 #### to build image locally copy Dockerfile in a folder and use 
