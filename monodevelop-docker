@@ -7,7 +7,7 @@ DOCKERCONTAINER="monodevelop-docker-container"
 COUNTER=0
 MAX_COUNTER=100
 
-# can use also podman
+# docker command
 DOCKERAPP=docker
 
 # check for empty docker container
