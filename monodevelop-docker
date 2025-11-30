@@ -7,6 +7,9 @@ DOCKERCONTAINER="monodevelop-docker-container"
 COUNTER=0
 MAX_COUNTER=100
 
+# can use also podman
+DOCKERAPP=docker
+
 # check for empty docker container
 while [  $COUNTER -lt $MAX_COUNTER ]; do
     # increase counter 
@@ -14,7 +17,7 @@ while [  $COUNTER -lt $MAX_COUNTER ]; do
     CONTAINER_NAME="$DOCKERCONTAINER$COUNTER"
 
     
-    if sudo docker ps -a --filter name=^$CONTAINER_NAME$ --format "{{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
+    if $DOCKERAPP ps -a --filter name=^$CONTAINER_NAME$ --format "{{.Names}}" | grep -q "^$CONTAINER_NAME$"; then
         # process with this specific container already run, skip it
         echo -e "container $CONTAINER_NAME already in use"
     else
@@ -28,32 +31,116 @@ if [ $COUNTER -ge $MAX_COUNTER ]; then
     exit 1
 fi
 
-# add this lines for proxy
-# -e "HTTP_PROXY=<host>:<port>" \
-# -e "HTTPS_PROXY=<host>:<port>" \
-
-# run docker with specific docker container founded
-sudo docker run \
- --name $CONTAINER_NAME \
- --net=host \
- -it --rm \
- -e "DISPLAY=$DISPLAY" \
- -e "XAUTHORITY=/home/$USER/.Xauthority" \
- -u $(id -u) \
- -v /tmp:/tmp \
- -v /opt:/opt \
- -v /home:/home:ro \
- -v /home/$USER:/home/$USER:rw \
- -v $HOME/.Xauthority:/root/.Xauthority:ro \
- -v /etc/group:/etc/group:ro \
- -v /etc/passwd:/etc/passwd:ro \
- -v /etc/shadow:/etc/shadow:ro \
- -v /etc/sudoers.d:/etc/sudoers.d:ro \
- -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
- armandob/monodevelop-docker "$@"
-
-# Check exit code
-if [ $? -ne 0 ]; then
-    echo "Error on podman exec."
-    exit 1
+CONFIG_DIR="$HOME/.config/MonoDevelop"
+CONFIG_FILE="$CONFIG_DIR/Properties.xml"
+mkdir -p "$CONFIG_DIR"
+if [ ! -f "$CONFIG_FILE" ]; then
+  echo "<Properties>" > "$CONFIG_FILE"
+  echo '  <Property key="MonoDevelop.Ide.UserInterfaceTheme" value="Xamarin-Dark" />' >> "$CONFIG_FILE"
+  echo "</Properties>" >> "$CONFIG_FILE"
+else
+  if ! grep -q 'MonoDevelop.Ide.UserInterfaceTheme' "$CONFIG_FILE"; then
+    sed -i '/<Properties>/a\  <Property key="MonoDevelop.Ide.UserInterfaceTheme" value="Xamarin-Dark" />' "$CONFIG_FILE"
+  else
+    sed -i 's/<Property key="MonoDevelop.Ide.UserInterfaceTheme" value=".*" \/>/<Property key="MonoDevelop.Ide.UserInterfaceTheme" value="Xamarin-Dark" \/>/' "$CONFIG_FILE"
+  fi
 fi
+
+LOCK_FILE="/tmp/monodevelop-docker.lock"
+
+new_windows_str=$(
+  (
+    flock -x 200 || { echo "Failed to acquire lock" >&2; exit 1; }
+
+    echo "DEBUG: Acquired lock for starting $CONTAINER_NAME" >&2
+
+    # Get existing MonoDevelop windows before starting the container
+    echo "DEBUG: Getting existing windows..." >&2
+    existing_windows=($(wmctrl -l | grep "MonoDevelop" | awk '{print $1}'))
+    echo "DEBUG: Existing windows: ${existing_windows[*]}" >&2
+
+    echo "DEBUG: Starting container $CONTAINER_NAME" >&2
+
+    # run docker with specific docker container founded
+    # add this lines for proxy
+    # -e "HTTP_PROXY=<host>:<port>" \
+    # -e "HTTPS_PROXY=<host>:<port>" \
+    $DOCKERAPP run \
+     --name $CONTAINER_NAME \
+     --net=host \
+     --init \
+     -d --rm \
+     -e "DISPLAY=$DISPLAY" \
+     -e "XAUTHORITY=/home/$USER/.Xauthority" \
+     -u $(id -u) \
+     -v /tmp:/tmp \
+     -v /opt:/opt \
+     -v /home:/home:ro \
+     -v /home/$USER:/home/$USER:rw \
+     -v $HOME/.Xauthority:/home/$USER/.Xauthority:ro \
+     -v /etc/group:/etc/group:ro \
+     -v /etc/passwd:/etc/passwd:ro \
+     -v /etc/shadow:/etc/shadow:ro \
+     -v /etc/sudoers.d:/etc/sudoers.d:ro \
+     -v /tmp/.X11-unix:/tmp/.X11-unix:rw \
+     armandob/monodevelop-docker "$@"
+
+    # Wait for the GUI to potentially open
+    echo "DEBUG: Sleeping for 4 seconds to allow GUI to open..." >&2
+    sleep 4
+
+    # Get all MonoDevelop windows after starting the container
+    echo "DEBUG: Getting all windows after start..." >&2
+    all_windows=($(wmctrl -l | grep "MonoDevelop" | awk '{print $1}'))
+    echo "DEBUG: All windows: ${all_windows[*]}" >&2
+
+    # Find new windows that appeared after launch
+    new_windows=()
+    for win in "${all_windows[@]}"; do
+      is_existing=false
+      for ex in "${existing_windows[@]}"; do
+        if [ "$win" == "$ex" ]; then
+          is_existing=true
+          break
+        fi
+      done
+      if ! $is_existing; then
+        new_windows+=("$win")
+      fi
+    done
+    echo "DEBUG: New windows for this container: ${new_windows[*]}" >&2
+
+    if [ ${#new_windows[@]} -eq 0 ]; then
+      echo "DEBUG: No new MonoDevelop windows found. Stopping container $CONTAINER_NAME." >&2
+      $DOCKERAPP stop $CONTAINER_NAME
+    else
+      echo "${new_windows[*]}"
+    fi
+
+    echo "DEBUG: Released lock after detecting windows." >&2
+
+  ) 200>$LOCK_FILE
+)
+
+if [ -z "$new_windows_str" ]; then
+  exit 0
+fi
+
+new_windows=($new_windows_str)
+
+# Loop to monitor if the specific new windows still exist
+while true; do
+  still_exist=false
+  for win in "${new_windows[@]}"; do
+    if wmctrl -l | grep -q "$win"; then
+      still_exist=true
+      break
+    fi
+  done
+  if ! $still_exist; then
+    echo "No associated MonoDevelop windows found for this container. Stopping container $CONTAINER_NAME."
+    $DOCKERAPP stop $CONTAINER_NAME
+    break
+  fi
+  sleep 2
+done

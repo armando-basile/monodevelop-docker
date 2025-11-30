@@ -2,7 +2,7 @@ FROM debian:10
 
 LABEL maintainer="armando-basile" \
       org.opencontainers.image.description="MonoDevelop 7.8.4 + Mono 6.12 + Xamarin-Dark theme" \
-      org.opencontainers.image.version="7.8.4-3" \
+      org.opencontainers.image.version="7.8.4-4" \
       org.opencontainers.image.licenses="MIT"
 
 ENTRYPOINT ["/usr/bin/monodevelop"]

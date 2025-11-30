@@ -1,1 +1,0 @@
-armando ALL=(ALL) NOPASSWD: /usr/bin/docker run *, /usr/bin/docker ps *
